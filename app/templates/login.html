@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% import 'bootstrap/wtf.html' as wtf %}
+{% block title %}{{ title }}{% endblock title %}
+{% block content %}
+    <div class="page-header">
+        {% block header %}
+            <h1>{{ title }}</h1>
+        {% endblock %}
+    </div>
+    <div class="container">
+        {#            <form method="post">#}
+        {#                {{ form.username.label }}#}
+        {#                {{ form.username() }}#}
+        {#                {{ form.password.label }}#}
+        {#                {{ form.password() }}#}
+        {#                {{ form.submit() }}#}
+        {#            </form>#}
+        {% for msg  in get_flashed_messages() %}
+            <div class='alert-info'>{{ msg }}</div>
+        {% endfor %}
+        {{ wtf.quick_form(form) }}
+    </div>
+{% endblock %}
