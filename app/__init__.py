@@ -9,7 +9,7 @@ from flask_bootstrap import Bootstrap
 from flask_nav import Nav
 from flask_nav.elements import *
 from flask_sqlalchemy import SQLAlchemy
-from .views import init_views
+from views import init_views
 import sys
 import os
 
