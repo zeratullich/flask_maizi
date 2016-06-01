@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{#{% import 'bootstrap/wtf.html' as wtf %}#}
+
+{% block scripts %}
+    {{ super() }}
+    {#    {{ pagedown.include_pagedown() }}#}
+    {{ pagedown.include_pagedown() }}
+{% endblock scripts %}
+
+{% block page_body %}
+    <div class="container">
+        <div class="container">
+            <form method="POST">
+                {{ form.hidden_tag() }}
+                <div class="form-group">
+                    <div>{{ form.title.label }}</div>
+                    <div>{{ form.title(class="form-contrl",placeholder=_("请输入文章标题"),required="required") }}</div>
+                </div>
+                <div class="form-group">
+                    <div>{{ form.body.label }}</div>
+                    <div>{{ form.body(only_input=True,rows=10,class="form-contrl",required="required") }}</div>
+                </div>
+                <div>{{ form.body(only_preview=True) }}</div>
+                <div class="form-group">
+                    {{ form.submit(class="btn btn-primary") }}
+                </div>
+            </form>
+            {#            {{ wtf.quick_form(form) }}#}
+        </div>
+    </div>
+{% endblock page_body %}

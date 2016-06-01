@@ -1,21 +1,89 @@
- #!/usr/bin/env python
+# !/usr/bin/env python
 # coding=utf-8
 
 __date__ = '2016/4/12'
 __author__ = 'chuan.li'
-from . import db
+from app import db, login_manager
+from flask_login import UserMixin, AnonymousUserMixin
+from datetime import datetime
+from markdown import markdown
 
 
 class Role(db.Model):
     __tablename__ = 'roles'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(64), nullable=False, unique=True)
+    name = db.Column(db.String(32))
     users = db.relationship('User', backref='role')
 
+    @staticmethod
+    def seed():
+        db.session.add_all(map(lambda r: Role(name=r), ['Guests', 'Administrators']))
+        db.session.commit()
 
-class User(db.Model):
+
+class User(UserMixin, db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String, nullable=False, unique=True)
-    password = db.Column(db.String, nullable=True)
+    name = db.Column(db.String(64))
+    email = db.Column(db.String(64))
+    password = db.Column(db.String(64))
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
+
+    posts = db.relationship('Post', backref='author')
+    comments = db.relationship('Comment', backref='author')
+
+    locale = db.Column(db.String(32), default='zh')
+
+    @staticmethod
+    def on_created(target, value, oldvalue, initiator):
+        target.role = Role.query.filter_by(name='Guests').first()
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+
+class AnonymousUser(AnonymousUserMixin):
+    @property
+    def locale(self):
+        return 'zh'
+
+    def is_administrator(self):
+        return False
+
+
+login_manager.anonymous_user = AnonymousUser
+
+db.event.listen(User.name, 'set', User.on_created)
+
+
+class Post(db.Model):
+    __tablename__ = 'posts'
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(64))
+    body = db.Column(db.Text)
+    body_html = db.Column(db.Text)
+    created = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+
+    comments = db.relationship('Comment', backref='post')
+    author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+
+    @staticmethod
+    def on_body_changed(target, value, oldvalue, initiator):
+        if value is None or (value is ''):
+            target.body_html = ''
+        else:
+            target.body_html = markdown(value)
+
+
+db.event.listen(Post.body, 'set', Post.on_body_changed)
+
+
+class Comment(db.Model):
+    __tablename__ = 'comments'
+    id = db.Column(db.Integer, primary_key=True)
+    body = db.Column(db.Text)
+    created = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'))
+    author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
