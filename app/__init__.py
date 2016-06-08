@@ -63,6 +63,7 @@ def create_app():
     from main import main as main_blueprint
     app.register_blueprint(auth_blueprint)
     app.register_blueprint(main_blueprint)
+
     app.permanent_session_lifetime = timedelta(minutes=5)
 
     @app.template_test('current_link')

@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="Encoding" defaultCharsetForPropertiesFiles="UTF-8">
+    <file url="file://$PROJECT_DIR$/../flask-salt-web/app/main/verify_code.py" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/app/static/bootstrap.min.css" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/app/static/bootstrap.min.js" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/app/static/favicon.ico" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/app/static/font" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/app/static/jquery.min.js" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/app/static/site.css" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/app/verify_code.py" charset="UTF-8" />
     <file url="PROJECT" charset="GBK" />
   </component>
 </project>

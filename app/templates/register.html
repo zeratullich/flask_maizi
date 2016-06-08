@@ -56,9 +56,11 @@
             {% else %}
                 <div class="form-group required">
                     {{ form.verification_code.label(class="control-label") | safe }}
-                    <label class="control-label"><img
-                            src="{{ url_for('static', filename='image/code/'+code_img) }}"></label>
-                    {{ form.verification_code(class="form-control", required=True) }}
+                    <label class="control-label">
+                        {#<img src="{{ url_for('static', filename='image/code/'+code_img) }}">#}
+                        <img src="data:image/jpeg;base64,{{ code_img }}"> <span><small>{{ _('看不清？点击') }}<a >{{ _('刷新') }}</a></small></span>
+                    </label>
+                    <span>{{ form.verification_code(class="form-control", required=True) }}</span>
                 </div>
 
                 <div class="form-group required">

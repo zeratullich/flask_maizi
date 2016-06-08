@@ -5,7 +5,7 @@ __date__ = '2016/4/11'
 __author__ = 'chuan.li'
 
 from  flask_wtf import Form
-from wtforms import StringField, IntegerField, PasswordField, SubmitField
+from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import DataRequired, Length, Regexp, Email, EqualTo
 from flask_babel import lazy_gettext as _
 
@@ -23,7 +23,6 @@ class RegistrationForm(Form):
                                                  Regexp('^[a-zA-z][A-Za-z0-9_.]*$', 0, _('用户名必须由字母、数字、下划线或 . 组成'))])
     password = PasswordField(_('密码'), validators=[DataRequired(), EqualTo('password2', message=_('密码必须一致！'))])
     password2 = PasswordField(_('确认密码'), validators=[DataRequired()])
-
     verification_code = StringField(_('验证码'), validators=[DataRequired(), Length(4, 4, message=_('填写4位验证码'))])
-    submit = SubmitField(_('马上注册！'))
 
+    submit = SubmitField(_('马上注册！'))
