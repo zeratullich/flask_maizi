@@ -50,8 +50,8 @@ def generate_validate_code():
         draw.text((60 * t + 10, 10), str, font=font, fill=rndColor2())
     # 模糊
     image = image.filter(ImageFilter.BLUR)
-    img_io = StringIO.StringIO()
-    image.save(img_io, 'jpeg')
-    img_io.seek(0)
-    img_base64 = base64.b64encode(img_io.read())
-    return img_base64, strs
+    # img_io = StringIO.StringIO()
+    # image.save(img_io, 'jpeg')
+    # img_io.seek(0)
+    # img_base64 = base64.b64encode(img_io.read())
+    return image, strs

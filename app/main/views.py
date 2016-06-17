@@ -4,7 +4,7 @@
 __date__ = '2016/4/12'
 __author__ = 'chuan.li'
 
-from flask import render_template, redirect, url_for, request
+from flask import render_template, redirect, url_for, request, session, make_response,flash
 from . import main
 from flask_login import login_required, current_user
 from app.models import Post, Comment
@@ -12,11 +12,14 @@ from forms import CommentForm, PostForm
 from app import db
 from flask_babel import lazy_gettext, gettext as _
 
+try:
+    import cStringIO as StringIO
+except:
+    import StringIO
+
 
 @main.route('/')
-@login_required
 def index():
-    # posts = Post.query.all()
     page_index = request.args.get('page', 1, type=int)
     query = Post.query.order_by(Post.created.desc())
     pagination = query.paginate(page_index, per_page=10, error_out=False)
@@ -40,10 +43,28 @@ def post(id):
     post = Post.query.get_or_404(id)
     form = CommentForm()
     if form.validate_on_submit():
-        comment = Comment(author=current_user, body=form.body.data, post=post)
-        db.session.add(comment)
-        db.session.commit()
+        if 'sec_code' in session and session['sec_code'] != form.verification_code.data:
+            flash(lazy_gettext('验证码错误，请刷新！'))
+            return  render_template('posts/detail.html', title=post.title, form=form, post=post)
+        else:
+            comment = Comment(author=current_user, body=form.body.data, post=post)
+            db.session.add(comment)
+            db.session.commit()
     return render_template('posts/detail.html', title=post.title, form=form, post=post)
+
+
+@main.route('/sec/code')
+def security_code():
+    from sec_code import create_validate_code
+    image, strs = create_validate_code()
+    buf = StringIO.StringIO()
+    image.save(buf, 'JPEG', quality=60)
+    session['sec_code'] = strs
+    print session['sec_code']
+    buf_str = buf.getvalue()
+    response = make_response(buf_str)
+    response.headers['Content-Type'] = 'image/jpeg'
+    return response
 
 
 @main.route('/edit', methods=['GET', 'POST'])
@@ -52,18 +73,14 @@ def post(id):
 def edit(id=0):
     form = PostForm()
     if id == 0:
-        print current_user
-        print current_user._get_current_object
         post = Post(author_id=current_user.id)
     else:
         post = Post.query.get_or_404(id)
     if form.validate_on_submit():
         post.body = form.body.data
         post.title = form.title.data
-
         db.session.add(post)
         db.session.commit()
-
         return redirect(url_for('.post', id=post.id))
 
     title = _('添加新文章')

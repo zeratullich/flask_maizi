@@ -5,7 +5,7 @@ __date__ = '2016/4/12'
 __author__ = 'chuan.li'
 
 import sys
-from flask import Flask
+from flask import Flask,make_response
 from flask_bootstrap import Bootstrap
 from flask_nav.elements import *
 from flask_sqlalchemy import SQLAlchemy

@@ -4,13 +4,19 @@
 __date__ = '2016/4/14'
 __author__ = 'chuan.li'
 
-from flask import render_template, redirect, url_for, flash
+from flask import render_template, redirect, url_for, flash, make_response, session
 from . import auth
 from app.auth.forms import LoginForm, RegistrationForm
 from app.models import User
 from app import db
-from flask_login import logout_user, login_user, session
+from flask_login import logout_user, login_user
 from flask_babel import lazy_gettext, gettext as _
+
+try:
+    import cStringIO as StringIO
+except:
+    import StringIO
+
 import sys
 
 reload(sys)
@@ -43,25 +49,35 @@ def get_user(username):
         return False
 
 
+@auth.route('/get/code')
+def get_code():
+    from verify_code import generate_validate_code
+    code_img, strs = generate_validate_code()
+    buf = StringIO.StringIO()
+    code_img.save(buf, 'JPEG', quality=80)
+    session['code_text'] = strs.lower()
+    print session['code_text']
+    buf_str = buf.getvalue()
+    response = make_response(buf_str)
+    response.headers['Content-Type'] = 'image/jpeg'
+    return response
+
+
 @auth.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegistrationForm()
-    from verify_code import generate_validate_code
+    print 'the code text is %s' % session.get('code_text', 'not exist!')
     if form.validate_on_submit():
+        print 'yes'
         username = form.username.data
-        print "username is %s" % username
-        print 'code_txt is %s' % session['code_text']
-        print '验证码是 %s' % form.verification_code.data.lower()
+        print 'the user is %s'% username
+        print 'the session is %s'%session['code_text']
         if get_user(username):
             flash(lazy_gettext('账号已注册！'))
-            code_img, code_text = generate_validate_code()
-            session['code_text'] = code_text
-            return render_template('register.html', title=_('注册'), form=form, code_img=code_img)
+            return render_template('register.html', title=_('注册'), form=form)
         if 'code_text' in session and session['code_text'] != form.verification_code.data.lower():
             flash(lazy_gettext('验证码错误，请刷新重填！'))
-            code_img, code_text = generate_validate_code()
-            session['code_text'] = code_text
-            return render_template('register.html', title=_('注册'), form=form, code_img=code_img)
+            return render_template('register.html', title=_('注册'), form=form)
         user = User(email=form.email.data, name=form.username.data, password=form.password.data)
         try:
             db.session.add(user)
@@ -70,9 +86,5 @@ def register():
         except:
             db.session.rollback()
             flash(_('注册失败！'))
-            code_img, code_text = generate_validate_code()
-            session['code_text'] = code_text
             return render_template('register.html', title=_('注册'), form=form)
-    code_img, code_text = generate_validate_code()
-    session['code_text'] = code_text
-    return render_template('register.html', title=_('注册'), form=form, code_img=code_img)
+    return render_template('register.html', title=_('注册'), form=form)

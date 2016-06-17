@@ -1,6 +1,4 @@
 {% extends 'base.html' %}
-{% import 'bootstrap/wtf.html' as wtf %}
-
 {% block page_body %}
     <div class="container">
         <span>{{ _("作者") }}：{{ post.author.name }} </span><span>{{ _("发表日期") }}：{{ post.created }}</span>
@@ -8,10 +6,51 @@
         <div>
             {{ post.body_html|safe }}
         </div>
-        <h3>评论</h3>
-        <div>
-            {{ wtf.quick_form(form) }}
-        </div>
+        <form method="post" class="form" role="form">
+            {{ form.hidden_tag() }}
+
+
+            <div class="form-group required">
+                {{ form.body.label(class="control-label") }}
+                {{ form.body(class="form-control flask-pagedown-input" ,required=True) }}
+            </div>
+
+            {% if form.errors.verification_code %}
+                <div class="form-group has-error required" style="margin-top: 10px;">
+                    {{ form.verification_code.label(class="control-label") |safe }}
+                    {{ form.verification_code(size=4,maxlength=4) }}
+                    <label class="control-label">
+                        <img src="{{ url_for('main.security_code') }}" id="sec_code"/>&nbsp;
+                        <small>{{ _('看不清？点击') }}<a href="javascript:void(0)"
+                                                   onclick="UpdateCode()">刷新</a>！
+                        </small>
+                    </label>
+                    {% for error in form.errors.verification_code %}
+                        <p class="help-block">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="form-group required" style="margin-top: 10px;">
+                    {{ form.verification_code.label(class="control-label") |safe }}
+                    {{ form.verification_code(size=4,maxlength=4) }}
+                    <label class="control-label">
+                        <img src="{{ url_for('main.security_code') }}" id="sec_code"/>&nbsp;
+                        <small>{{ _('看不清？点击') }}<a href="javascript:void(0)"
+                                                   onclick="UpdateCode()">刷新</a>！
+                        </small>
+                    </label>
+                </div>
+            {% endif %}
+
+            {% for message in get_flashed_messages() %}
+                <div class="alert-danger form-group required">{{ message }}</div>
+            {% endfor %}
+
+            <div class="form-group required">
+                {{ form.submit(class="btn btn-primary submit" ,type='submit') }}
+            </div>
+
+        </form>
         {% for comment in post.comments | sort(attribute='created',reverse=True) %}
             <div class="media">
                 <div class="media-left">
@@ -21,9 +60,15 @@
                 </div>
                 <div class="media-body">
                     <small class="text-muted">{{ comment.created }}</small>
-                    {{ comment.body }}
+                    <p>{{ comment.body }}</p>
                 </div>
             </div>
         {% endfor %}
     </div>
+
+    <script type="application/javascript">
+        function UpdateCode() {
+            document.getElementById('sec_code').src = "{{ url_for('main.security_code') }}?s=" + Math.random()
+        }
+    </script>
 {% endblock page_body %}
